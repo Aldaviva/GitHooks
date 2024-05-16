@@ -1,4 +1,5 @@
-﻿using System.Collections.Frozen;
+﻿using GitHooks.Tasks;
+using System.Collections.Frozen;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -25,24 +26,24 @@ public partial class FixMeBlocker: PrecommitHook {
         IEnumerable<string> stagedTextFiles = stagedFiles
             .Where(filename => TEXT_FILE_EXTENSIONS.Contains(Path.GetExtension(filename).ToLowerInvariant()));
 
-        var firstProblemFinderTask = new TaskCompletionSource<(string filename, int lineNumber, int columnNumber, string line)>();
-
-        IEnumerable<Task> fileReadTasks = stagedTextFiles.Select(async filename => {
+        FilePosition? firstProblem = await Task2.firstOrDefault(stagedTextFiles.Select(async Task<FilePosition?> (filename) => {
             if (new FileInfo(filename).Length <= MAX_FILE_SIZE) {
                 string fileContents = await File.ReadAllTextAsync(filename, Encoding.UTF8, cts.Token);
                 Match  match        = disallowedTokenPattern().Match(fileContents);
                 if (match.Success) {
-                    (int lineNumber, int columnNumber, string? line) = stringOffsetToLine(fileContents, match.Index);
-                    firstProblemFinderTask.TrySetResult((filename, lineNumber, columnNumber, line));
+                    return stringOffsetToLine(filename, fileContents, match.Index);
                 }
             }
-        });
 
-        await Task.WhenAny(firstProblemFinderTask.Task, Task.WhenAll(fileReadTasks));
+            return null;
+        }), task => task.Result != null, cts);
 
-        if (firstProblemFinderTask.Task.IsCompletedSuccessfully) {
-            (string filename, int lineNumber, int columnNumber, string line) = firstProblemFinderTask.Task.Result;
-            Console.WriteLine($"Found FIXME. Get rid of the temporary hacks and use `git add; git commit` to proceed.\n{filename}:{lineNumber:N0}:{columnNumber:N0} {line.Trim()}");
+        if (firstProblem is { } problem) {
+            Console.WriteLine(
+                $"""
+                 Found FIXME. Get rid of the temporary hacks and use `git add; git commit` to proceed.
+                 {problem.filename}:{problem.lineNumber:N0}:{problem.columnNumber:N0} {problem.line.Trim()}
+                 """);
             await cts.CancelAsync();
             return PrecommitHook.HookResult.ABORT_COMMIT;
         } else {
@@ -51,7 +52,7 @@ public partial class FixMeBlocker: PrecommitHook {
     }
 
     /// <exception cref="ArgumentOutOfRangeException">if <paramref name="offset"/> is larger than <paramref name="contents"/></exception>
-    private static (int lineNumber, int columnNumber, string line) stringOffsetToLine(string contents, int offset) {
+    private static FilePosition stringOffsetToLine(string filename, string contents, int offset) {
         if (offset >= contents.Length) {
             throw new ArgumentOutOfRangeException(nameof(offset), offset, $"must be less than {contents.Length:N0}, the length of {nameof(contents)}");
         }
@@ -69,7 +70,9 @@ public partial class FixMeBlocker: PrecommitHook {
         int    columnNumber = offset - lineStartOffset + 1;
         string line         = currentOffset == -1 ? contents[lineStartOffset..] : contents[lineStartOffset..currentOffset].TrimEnd('\r');
 
-        return (lineNumber, columnNumber, line);
+        return new FilePosition(filename, lineNumber, columnNumber, line);
     }
+
+    private readonly record struct FilePosition(string filename, int lineNumber, int columnNumber, string line);
 
 }
