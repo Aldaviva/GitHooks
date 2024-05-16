@@ -4,20 +4,20 @@ using System.Text.RegularExpressions;
 
 namespace GitHooks.Hooks;
 
-// ReSharper disable once InconsistentNaming - avoid triggering this check when committing to this repository
-public partial class Fix_MeBlocker: PrecommitHook {
+public partial class FixMeBlocker: PrecommitHook {
 
     /// <summary>
     /// 100 MB
     /// </summary>
     private const long MAX_FILE_SIZE = 100 * 1024 * 1024;
 
-    [GeneratedRegex("\\bFIX" + "ME\\b", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"\bFIXME\b", RegexOptions.IgnoreCase)]
     private static partial Regex disallowedTokenPattern();
 
     private static readonly ISet<string> TEXT_FILE_EXTENSIONS = new HashSet<string> {
-        ".bash", ".bat", ".cmd", ".cs", ".csproj", ".css", ".groovy", ".htm", ".html", ".ini", ".java", ".js", ".json", ".less", ".md", ".nsh", ".nsi", ".php", ".properties", ".ps1", ".pubxml", ".sh",
-        ".sln", ".svg", ".xaml", ".xml"
+        ".ahk", ".bash", ".bat", ".c", ".cc", ".cmd", ".config", ".cpp", ".cs", ".csproj", ".css", ".cxx", ".erl", ".groovy", ".gyp", ".h", ".h++", ".hh", ".hm", ".hpp", ".htm", ".html", ".hxx",
+        ".ini", ".java", ".js", ".json", ".jsx", ".kt", ".kts", ".less", ".manifest", ".md", ".nsh", ".nsi", ".php", ".properties", ".ps1", ".pubxml", ".py", ".rb", ".rc", ".rs", ".sh", ".sln",
+        ".src", ".svg", ".swift", ".toml", ".ts", ".tsx", ".txt", ".vcxproj", ".xaml", ".xml"
     }.ToFrozenSet();
 
     public async Task<PrecommitHook.HookResult> run(IEnumerable<string> stagedFiles) {
@@ -42,7 +42,7 @@ public partial class Fix_MeBlocker: PrecommitHook {
 
         if (firstProblemFinderTask.Task.IsCompletedSuccessfully) {
             (string filename, int lineNumber, int columnNumber, string line) = firstProblemFinderTask.Task.Result;
-            Console.WriteLine("Found FIX" + $"ME. Get rid of the temporary hacks and use `git add; git commit` to proceed.\n{filename}:{lineNumber:N0}:{columnNumber:N0} {line.Trim()}");
+            Console.WriteLine($"Found FIXME. Get rid of the temporary hacks and use `git add; git commit` to proceed.\n{filename}:{lineNumber:N0}:{columnNumber:N0} {line.Trim()}");
             await cts.CancelAsync();
             return PrecommitHook.HookResult.ABORT_COMMIT;
         } else {

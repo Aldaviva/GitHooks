@@ -2,7 +2,7 @@
 using GitHooks.Hooks;
 
 ICollection<PrecommitHook> precommitHooks = [
-    new Fix_MeBlocker(),
+    new FixMeBlocker(),
     new ILLinkRemover()
 ];
 
