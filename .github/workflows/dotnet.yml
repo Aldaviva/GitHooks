@@ -18,13 +18,13 @@ jobs:
       uses: actions/checkout@v4
         
     - name: Restore
-      run: dotnet restore ${{ env.ProjectName }} --locked-mode --verbosity normal
+      run: dotnet restore ${{ env.ProjectName }} --locked-mode --runtime ${{ env.TargetPlatform }} --verbosity normal
 
     - name: Build
-      run: dotnet build ${{ env.ProjectName }} --no-restore --runtime ${{ env.TargetPlatform }} --configuration Release
+      run: dotnet build ${{ env.ProjectName }} --no-restore --runtime ${{ env.TargetPlatform }} --configuration Release --verbosity normal
 
     - name: Publish
-      run: dotnet publish ${{ env.ProjectName }} --no-build --configuration Release --runtime ${{ env.TargetPlatform }}
+      run: dotnet publish ${{ env.ProjectName }} --no-build --configuration Release --runtime ${{ env.TargetPlatform }} --verbosity normal
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
