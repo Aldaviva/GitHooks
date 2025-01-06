@@ -19,10 +19,10 @@ Custom logic that runs right before you create a Git commit.
     - If it finds any, it stops the commit and tells you which file and line number it was found in, so you can fix the code.
 - Checks staged .NET package lock files for `Microsoft.NET.ILLink.Tasks`, which is automatically added by Visual Studio and causes package restoration in locked mode to fail because it's not a real dependency of your project.
     - If it finds any, it automatically removes this dependency from `packages.lock.json` so that `dotnet restore --locked-mode` will succeed. This does not break Visual Studio either, which will either ignore it or try to add it again later. The commit continues automatically.
+    - This dependency is preserved if the project publishes to a single file, for example if `PublishSingleFile` or `PublishAot` are set to `true` in the `.csproj` file.
 
 ## Requirements
 - [Git](https://git-scm.com/downloads)
-- [.NET 8 Runtime x64](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) or later
 
 ## Installation
 1. Download [`pre-commit.exe`](https://github.com/Aldaviva/GitHooks/releases/latest/download/pre-commit.exe) from the [latest release](https://github.com/Aldaviva/GitHooks/releases/latest).

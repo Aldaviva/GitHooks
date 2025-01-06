@@ -4,7 +4,6 @@ using System.Text.RegularExpressions;
 
 namespace GitHooks.Hooks;
 
-//TODO: make this allow ILLink in package lock files when the csproj file in the same directory has a direct dependency on that ILLink package, or maybe if PublishAot is true
 public partial class ILLinkRemover: PrecommitHook {
 
     private const string NEEDLE        = "Microsoft.NET.ILLink.Tasks";
@@ -17,6 +16,9 @@ public partial class ILLinkRemover: PrecommitHook {
 
     [GeneratedRegex(@"<\s*PublishAot\s*>\s*true\s*</\s*PublishAot\s*>", RegexOptions.IgnoreCase)]
     private static partial Regex publishAotPattern();
+
+    [GeneratedRegex(@"<\s*PublishSingleFile\s*>\s*true\s*</\s*PublishSingleFile\s*>", RegexOptions.IgnoreCase)]
+    private static partial Regex publishSingleFilePattern();
 
     public async Task<PrecommitHook.HookResult> run(IEnumerable<string> stagedFiles) {
         IEnumerable<string> stagedPackageLockFiles = stagedFiles.Where(filename => Path.GetFileName(filename).Equals(LOCK_FILENAME, StringComparison.InvariantCultureIgnoreCase));
@@ -33,12 +35,13 @@ public partial class ILLinkRemover: PrecommitHook {
 
             CancellationTokenSource projectReadCts = new();
 
-            (string filename, string contents) aotProject = await Task2.firstOrDefault(Directory.EnumerateFiles(Path.GetDirectoryName(packageLockFilename)!, "*.csproj", SearchOption.TopDirectoryOnly)
+            (string filename, string contents) singleFileProject = await Task2.firstOrDefault(Directory
+                    .EnumerateFiles(Path.GetDirectoryName(packageLockFilename)!, "*.csproj", SearchOption.TopDirectoryOnly)
                     .Select(async projectFilename =>
                         (filename: projectFilename, contents: await File.ReadAllTextAsync(projectFilename, UTF8, projectReadCts.Token))),
-                task => publishAotPattern().IsMatch(task.Result.contents), projectReadCts);
+                task => publishAotPattern().IsMatch(task.Result.contents) || publishSingleFilePattern().IsMatch(task.Result.contents), projectReadCts);
 
-            if (aotProject == default) {
+            if (singleFileProject == default) {
                 bool   fileModified         = false;
                 string originalFileContents = await originalFileContentsTask;
                 string modifiedFileContents = ilLinkPattern().Replace(originalFileContents, _ => {

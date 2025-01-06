@@ -1,18 +1,18 @@
 {
   "version": 1,
   "dependencies": {
-    "net8.0-windows7.0": {
+    "net9.0-windows7.0": {
       "Microsoft.DotNet.ILCompiler": {
         "type": "Direct",
-        "requested": "[8.0.5, )",
-        "resolved": "8.0.5",
-        "contentHash": "tfdncRQLXNpATB4Ykj11O5+fbkBAHoeLi6XfyxAWmilU4rwC3apT612RIuhqB6tBGE69G7Dl1g7HeydsH3Wz1w=="
+        "requested": "[9.0.0, )",
+        "resolved": "9.0.0",
+        "contentHash": "bbnlV2PbUmCQ8Ndpx0kJaicLyV28IU+4IzyctQLL57+DxrHurYr2qsJrC8+yD44Q0DyPfv2oM168c1Tk6Bxbmg=="
       },
       "Microsoft.NET.ILLink.Tasks": {
         "type": "Direct",
-        "requested": "[8.0.5, )",
-        "resolved": "8.0.5",
-        "contentHash": "4ISW1Ndgz86FkIbu5rVlMqhhtojdy5rUlxC/N+9kPh9qbYcvHiCvYbHKzAPVIx9OPYIjT9trXt7JI42Y5Ukq6A=="
+        "requested": "[9.0.0, )",
+        "resolved": "9.0.0",
+        "contentHash": "zAwp213evC3UkimtVXRb+Dlgc/40QG145nmZDtp2LO9zJJMfrp+i/87BnXN7tRXEA4liyzdFkjqG1HE8/RPb4A=="
       },
       "UnionTypes": {
         "type": "Direct",
@@ -21,20 +21,20 @@
         "contentHash": "Nf7oNa8/mFwOiJYKmWcI7hcNwbFiXpSCZ2/DsMVWQk/aucpJtTKNvt4EYuTeOZi4IAseaPw04uf4rQEG5B6+tA=="
       }
     },
-    "net8.0-windows7.0/win-x64": {
+    "net9.0-windows7.0/win-x64": {
       "Microsoft.DotNet.ILCompiler": {
         "type": "Direct",
-        "requested": "[8.0.5, )",
-        "resolved": "8.0.5",
-        "contentHash": "tfdncRQLXNpATB4Ykj11O5+fbkBAHoeLi6XfyxAWmilU4rwC3apT612RIuhqB6tBGE69G7Dl1g7HeydsH3Wz1w==",
+        "requested": "[9.0.0, )",
+        "resolved": "9.0.0",
+        "contentHash": "bbnlV2PbUmCQ8Ndpx0kJaicLyV28IU+4IzyctQLL57+DxrHurYr2qsJrC8+yD44Q0DyPfv2oM168c1Tk6Bxbmg==",
         "dependencies": {
-          "runtime.win-x64.Microsoft.DotNet.ILCompiler": "8.0.5"
+          "runtime.win-x64.Microsoft.DotNet.ILCompiler": "9.0.0"
         }
       },
       "runtime.win-x64.Microsoft.DotNet.ILCompiler": {
         "type": "Transitive",
-        "resolved": "8.0.5",
-        "contentHash": "tb0bL36K+FfXdErkSb3xiJLzbnuXHv09dF+XOS76SLTGbWgNUJlC7aSAg4Z7c5nRAh6BRoqC932H4r/3502w5A=="
+        "resolved": "9.0.0",
+        "contentHash": "oDIioFi3rPT79AS5TSEwU/nlqINeJwxG5yKG/BLY57an5PV+btlPBGJgOjI3d8/BdTpKmsd9pdavm/4ENq5M/A=="
       }
     }
   }
