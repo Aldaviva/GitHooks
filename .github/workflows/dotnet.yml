@@ -21,10 +21,10 @@ jobs:
       run: dotnet restore ${{ env.ProjectName }} --locked-mode --verbosity normal
 
     - name: Build
-      run: dotnet build ${{ env.ProjectName }} --no-restore --runtime ${{ env.TargetPlatform }} --configuration Release --no-self-contained
+      run: dotnet build ${{ env.ProjectName }} --no-restore --runtime ${{ env.TargetPlatform }} --configuration Release
 
     - name: Publish
-      run: dotnet publish ${{ env.ProjectName }} --no-build --configuration Release --runtime ${{ env.TargetPlatform }} --self-contained false
+      run: dotnet publish ${{ env.ProjectName }} --no-build --configuration Release --runtime ${{ env.TargetPlatform }}
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
