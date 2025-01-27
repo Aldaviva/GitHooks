@@ -16,9 +16,9 @@
       },
       "UnionTypes": {
         "type": "Direct",
-        "requested": "[1.0.1, )",
-        "resolved": "1.0.1",
-        "contentHash": "Nf7oNa8/mFwOiJYKmWcI7hcNwbFiXpSCZ2/DsMVWQk/aucpJtTKNvt4EYuTeOZi4IAseaPw04uf4rQEG5B6+tA=="
+        "requested": "[1.1.0, )",
+        "resolved": "1.1.0",
+        "contentHash": "9OEQYxKvKfGAKKRZ6BtuOPE5cD/QKHXmmUY+jyk/i3mUbGpLOW6HBkKLa1tS+Ut3hc3QYzchAlSNWVmGYni+wg=="
       }
     },
     "net9.0-windows7.0/win-x64": {
