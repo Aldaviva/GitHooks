@@ -17,7 +17,7 @@
         <SelfContained>false</SelfContained>
 
         <Version>0.2.0</Version>
-        <AssemblyName>pre-commit</AssemblyName>
+        <AssemblyName>pre-commit</AssemblyName> <!-- filename -->
         <AssemblyTitle>Ben's Git Hooks</AssemblyTitle> <!-- file description -->
         <Product>$(AssemblyTitle)</Product> <!-- product name -->
         <Authors>Ben Hutchison</Authors>

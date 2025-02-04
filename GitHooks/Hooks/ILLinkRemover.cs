@@ -1,6 +1,7 @@
 using GitHooks.Tasks;
 using System.Text;
-using System.Text.RegularExpressions;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Xml.Linq;
 
 namespace GitHooks.Hooks;
@@ -36,28 +37,20 @@ namespace GitHooks.Hooks;
  * | xpathFound    | AOT       | 22.981 us | 0.7466 us | 0.0409 us |
  * | xpathNotFound | AOT       | 23.103 us | 0.9354 us | 0.0513 us |
  */
-public partial class ILLinkRemover: PreCommitHook {
+public class ILLinkRemover: PreCommitHook {
 
-    private const string LOCK_FILENAME = "packages.lock.json";
+    private const string LOCK_FILENAME     = "packages.lock.json";
+    private const string PACKAGE_TO_REMOVE = "Microsoft.NET.ILLink.Tasks";
 
-    private static readonly Encoding UTF8 = new UTF8Encoding(false, true);
-
-    [GeneratedRegex(@"""Microsoft\.NET\.ILLink\.Tasks""\s*:\s*{.*?},?\s*", RegexOptions.Singleline | RegexOptions.IgnoreCase)]
-    private static partial Regex ilLinkPattern();
-
-    /*[GeneratedRegex(@"<\s*PublishAot\s*>\s*true\s*</\s*PublishAot\s*>", RegexOptions.IgnoreCase)]
-    private static partial Regex publishAotPattern();
-
-    [GeneratedRegex(@"<\s*PublishSingleFile\s*>\s*true\s*</\s*PublishSingleFile\s*>", RegexOptions.IgnoreCase)]
-    private static partial Regex publishSingleFilePattern();*/
-
-    private static readonly string[] SINGLE_FILE_ELEMENT_NAMES = ["PublishSingleFile", "PublishAOT"];
+    private static readonly Encoding              UTF8                      = new UTF8Encoding(false, true);
+    private static readonly string[]              SINGLE_FILE_ELEMENT_NAMES = ["PublishSingleFile", "PublishAOT"];
+    private static readonly JsonSerializerOptions JSON_OPTIONS              = new(JsonSerializerDefaults.General) { WriteIndented = true, IndentSize = 2 };
 
     public async Task<PreCommitHook.HookResult> run(IEnumerable<string> stagedFiles) {
         IEnumerable<string> stagedPackageLockFiles = stagedFiles.Where(filename => Path.GetFileName(filename).Equals(LOCK_FILENAME, StringComparison.OrdinalIgnoreCase));
 
         await Task.WhenAll(stagedPackageLockFiles.Select(async packageLockFilename => {
-            Task<string> originalFileContentsTask = Git.readStagedFile(packageLockFilename);
+            Task<string> originalLockFileContentsTask = Git.readStagedFile(packageLockFilename);
 
             CancellationTokenSource projectReadCts = new();
 
@@ -68,17 +61,19 @@ public partial class ILLinkRemover: PreCommitHook {
                 task => linqHasElementWithText(task.Result.contents, SINGLE_FILE_ELEMENT_NAMES, "true"), projectReadCts);
 
             if (singleFileProject == default) {
-                bool   fileModified         = false;
-                string originalFileContents = await originalFileContentsTask;
-                string modifiedFileContents = ilLinkPattern().Replace(originalFileContents, _ => {
-                    fileModified = true;
-                    return string.Empty;
-                });
+                bool fileModified = false;
+
+                JsonObject? packageLockObject = JsonSerializer.Deserialize<JsonObject>(await originalLockFileContentsTask, JSON_OPTIONS);
+                foreach (KeyValuePair<string, JsonNode?> runtimeDependencies in packageLockObject?["dependencies"] as JsonObject ?? []) {
+                    fileModified |= (runtimeDependencies.Value as JsonObject)?.Remove(PACKAGE_TO_REMOVE) ?? false;
+                }
 
                 if (fileModified) {
-                    await File.WriteAllTextAsync(packageLockFilename, modifiedFileContents, UTF8, CancellationToken.None);
+                    await using (FileStream lockFileWriteStream = File.Open(packageLockFilename, FileMode.Truncate, FileAccess.Write)) {
+                        await JsonSerializer.SerializeAsync(lockFileWriteStream, packageLockObject, JSON_OPTIONS, CancellationToken.None);
+                    }
                     await Git.stageFile(packageLockFilename);
-                    Console.WriteLine($"Removed \"Microsoft.NET.ILLink.Tasks\" from {packageLockFilename}");
+                    Console.WriteLine($"Removed {PACKAGE_TO_REMOVE} from {packageLockFilename}");
                 }
             }
         }));
@@ -86,9 +81,10 @@ public partial class ILLinkRemover: PreCommitHook {
         return PreCommitHook.HookResult.PROCEED_WITH_COMMIT;
     }
 
-    private static bool linqHasElementWithText(string xmlDoc, IEnumerable<string> elementNames, string elementText) => XDocument.Parse(xmlDoc)
-        .Elements()
-        .IntersectBy(elementNames, element => element.Name.LocalName, StringComparer.OrdinalIgnoreCase)
-        .Any(element => element.FirstNode is XText text && elementText.Equals(text.Value, StringComparison.OrdinalIgnoreCase));
+    private static bool linqHasElementWithText(string xmlDoc, IEnumerable<string> elementNames, string elementText) =>
+        XDocument.Parse(xmlDoc)
+            .Elements()
+            .IntersectBy(elementNames, element => element.Name.LocalName, StringComparer.OrdinalIgnoreCase)
+            .Any(element => element.FirstNode is XText text && elementText.Equals(text.Value, StringComparison.OrdinalIgnoreCase));
 
 }
