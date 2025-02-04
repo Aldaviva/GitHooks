@@ -8,10 +8,13 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <RollForward>latestMajor</RollForward>
-        <PublishAot>true</PublishAot>
-        <OptimizationPreference>speed</OptimizationPreference>
-        <InvariantGlobalization>true</InvariantGlobalization>
         <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+        <!-- AOT is not faster: in practice, it adds about 10 milliseconds to the total execution time -->
+        <!--<PublishAot>true</PublishAot>
+        <OptimizationPreference>speed</OptimizationPreference>
+        <InvariantGlobalization>true</InvariantGlobalization>-->
+        <PublishSingleFile>true</PublishSingleFile>
+        <SelfContained>false</SelfContained>
 
         <Version>0.2.0</Version>
         <AssemblyName>pre-commit</AssemblyName>

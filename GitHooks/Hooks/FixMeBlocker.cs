@@ -6,8 +6,8 @@ namespace GitHooks.Hooks;
 
 public partial class FixMeBlocker: PreCommitHook {
 
-    /// 100 MB
-    private const long MAX_FILE_SIZE = 100 * 1024 * 1024;
+    /// 50 MB
+    private const long MAX_FILE_SIZE = 50 * 1024 * 1024;
 
     [GeneratedRegex(@"\bFIXME\b", RegexOptions.IgnoreCase)]
     private static partial Regex disallowedTokenPattern();
