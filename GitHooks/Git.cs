@@ -8,7 +8,7 @@ public static class Git {
 
     private record ExecutionResult(int exitCode, string standardOutput, string standardError, string cmdline);
 
-    public static async Task<Commitish> getHeadCommitHash() =>
+    private static async Task<Commitish> getHeadCommitHash() =>
         (await executeGit("rev-parse", "--verify", WellKnownCommit.HEAD.ToString()))?.exitCode is null or 0 ? WellKnownCommit.HEAD : "4b825dc642cb6eb9a060e54bf8d69288fbee4904";
 
     public static async Task<string[]> getStagedFiles() {
@@ -28,12 +28,16 @@ public static class Git {
 
     private static async Task<ExecutionResult?> executeGit(params string[] arguments) {
         Process? process;
+        // Stopwatch gitDuration = new();
+        ProcessStartInfo startInfo = new("git", arguments) {
+            UseShellExecute        = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError  = true
+        };
+
         try {
-            process = Process.Start(new ProcessStartInfo("git", arguments) {
-                UseShellExecute        = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError  = true
-            });
+            // gitDuration.Start();
+            process = Process.Start(startInfo);
         } catch (Win32Exception) {
             return null;
         }
@@ -47,7 +51,10 @@ public static class Git {
             Task<string> stderr = process.StandardError.ReadToEndAsync();
 
             await process.WaitForExitAsync();
-            return new ExecutionResult(process.ExitCode, (await stdout).Trim(), (await stderr).Trim(), string.Join(' ', arguments.Prepend(process.ProcessName)));
+            // gitDuration.Stop();
+            ExecutionResult result = new(process.ExitCode, (await stdout).Trim(), (await stderr).Trim(), string.Join(' ', arguments.Prepend(startInfo.FileName)));
+            // Console.WriteLine($"{result.cmdline} exited with code {result.exitCode} in {gitDuration.ElapsedMilliseconds:N0} ms.");
+            return result;
         }
     }
 

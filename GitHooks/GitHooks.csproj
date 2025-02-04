@@ -9,6 +9,7 @@
         <LangVersion>latest</LangVersion>
         <RollForward>latestMajor</RollForward>
         <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+        <DebugType>embedded</DebugType>
         <!-- AOT is not faster: in practice, it adds about 10 milliseconds to the total execution time -->
         <!--<PublishAot>true</PublishAot>
         <OptimizationPreference>speed</OptimizationPreference>

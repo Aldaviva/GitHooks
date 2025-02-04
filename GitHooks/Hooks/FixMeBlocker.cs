@@ -35,8 +35,9 @@ public partial class FixMeBlocker: PreCommitHook {
         }))).Compact();
 
         if (problems.Length != 0) {
-            Console.WriteLine("Found FIXME. Get rid of the temporary hacks and use `git add <file>; git commit` to proceed.");
-            foreach (FilePosition problem in problems) {
+            Console.WriteLine(
+                $"Found {problems.Length:N0} FIXME{(problems.Length >= 2 ? "s" : "")}. To continue committing, get rid of the following temporary hacks, then run `git add <file>…; git commit`.");
+            foreach (FilePosition problem in problems.OrderBy(p => p.filename, StringComparer.CurrentCultureIgnoreCase).ThenBy(p => p.lineNumber).ThenBy(p => p.columnNumber)) {
                 Console.WriteLine($"{problem.filename}:{problem.lineNumber:D}:{problem.columnNumber:D} {problem.line.Trim()}");
             }
 
