@@ -8,6 +8,12 @@
         "resolved": "9.0.1",
         "contentHash": "BKFAkdhUUJivAoKuSWcT23WH9E+AWQMJootzt9X+lnesOD2a2yNIe1ZQFtxB8H3ayskLBD5gYyIbj5GIfw7rZg=="
       },
+      "Unfucked": {
+        "type": "Direct",
+        "requested": "[0.0.0-beta4, )",
+        "resolved": "0.0.0-beta4",
+        "contentHash": "pWwHZP9Ok/LAZqFSrZ9CNddcWhx92wFxDh8oUgSrsNZjv/lFbM3HPSdcmLeqj4hhv1eir5a/DcQk+5XPSHzyvQ=="
+      },
       "UnionTypes": {
         "type": "Direct",
         "requested": "[1.1.0, )",

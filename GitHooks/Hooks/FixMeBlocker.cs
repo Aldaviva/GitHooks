@@ -1,6 +1,6 @@
-using GitHooks.Tasks;
 using System.Collections.Frozen;
 using System.Text.RegularExpressions;
+using Unfucked;
 
 namespace GitHooks.Hooks;
 
@@ -12,7 +12,7 @@ public partial class FixMeBlocker: PreCommitHook {
     [GeneratedRegex(@"\bFIXME\b", RegexOptions.IgnoreCase)]
     private static partial Regex disallowedTokenPattern();
 
-    private static readonly ISet<string> TEXT_FILE_EXTENSIONS = (FrozenSet<string>) [
+    private static readonly FrozenSet<string> TEXT_FILE_EXTENSIONS = [
         ".ahk", ".am", ".appxmanifest", ".bash", ".bat", ".c", ".cc", ".cmd", ".config", ".cpp", ".cs", ".csproj", ".css", ".csx", ".cxx", ".dtd", ".editorconfig", ".erl", ".fs", ".fsi", ".fsscript",
         ".fsx", ".gitattributes", ".gitignore", ".gitmodules", ".groovy", ".gsh", ".gvy", ".gy", ".gyp", ".h", ".h++", ".hh", ".hm", ".hpp", ".htm", ".html", ".hxx", ".ini", ".java", ".js", ".json",
         ".jsp", ".jsx", ".kt", ".kts", ".less", ".manifest", ".md", ".nsh", ".nsi", ".php", ".properties", ".props", ".ps1", ".pubxml", ".py", ".rb", ".rc", ".reg", ".resx", ".rs", ".runsettings",
@@ -20,11 +20,9 @@ public partial class FixMeBlocker: PreCommitHook {
     ];
 
     public async Task<PreCommitHook.HookResult> run(IEnumerable<string> stagedFiles) {
-        CancellationTokenSource cts = new();
-        IEnumerable<string> stagedTextFiles = stagedFiles
-            .Where(filename => TEXT_FILE_EXTENSIONS.Contains(Path.GetExtension(filename).ToLowerInvariant()));
+        IEnumerable<string> stagedTextFiles = stagedFiles.Where(filename => TEXT_FILE_EXTENSIONS.Contains(Path.GetExtension(filename).ToLowerInvariant()));
 
-        FilePosition? firstProblem = await Task2.firstOrDefault(stagedTextFiles.Select(async Task<FilePosition?> (filename) => {
+        FilePosition[] problems = (await Task.WhenAll(stagedTextFiles.Select(async Task<FilePosition?> (filename) => {
             if (new FileInfo(filename).Length <= MAX_FILE_SIZE) {
                 string fileContents = await Git.readStagedFile(filename);
                 Match  match        = disallowedTokenPattern().Match(fileContents);
@@ -34,15 +32,14 @@ public partial class FixMeBlocker: PreCommitHook {
             }
 
             return null;
-        }), task => task.Result != null, cts);
+        }))).Compact();
 
-        if (firstProblem is { } problem) {
-            Console.WriteLine(
-                $"""
-                 Found FIXME. Get rid of the temporary hacks and use `git add; git commit` to proceed.
-                 {problem.filename}:{problem.lineNumber:N0}:{problem.columnNumber:N0} {problem.line.Trim()}
-                 """);
-            await cts.CancelAsync();
+        if (problems.Length != 0) {
+            Console.WriteLine("Found FIXME. Get rid of the temporary hacks and use `git add; git commit` to proceed.");
+            foreach (FilePosition problem in problems) {
+                Console.WriteLine($"{problem.filename}:{problem.lineNumber:D}:{problem.columnNumber:D} {problem.line.Trim()}");
+            }
+
             return PreCommitHook.HookResult.ABORT_COMMIT;
         } else {
             return PreCommitHook.HookResult.PROCEED_WITH_COMMIT;
