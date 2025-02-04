@@ -1,34 +1,32 @@
-﻿using GitHooks.Tasks;
+using GitHooks.Tasks;
 using System.Collections.Frozen;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace GitHooks.Hooks;
 
-public partial class FixMeBlocker: PrecommitHook {
+public partial class FixMeBlocker: PreCommitHook {
 
-    /// <summary>
     /// 100 MB
-    /// </summary>
     private const long MAX_FILE_SIZE = 100 * 1024 * 1024;
 
     [GeneratedRegex(@"\bFIXME\b", RegexOptions.IgnoreCase)]
     private static partial Regex disallowedTokenPattern();
 
-    private static readonly ISet<string> TEXT_FILE_EXTENSIONS = new HashSet<string> {
-        ".ahk", ".bash", ".bat", ".c", ".cc", ".cmd", ".config", ".cpp", ".cs", ".csproj", ".css", ".cxx", ".erl", ".groovy", ".gyp", ".h", ".h++", ".hh", ".hm", ".hpp", ".htm", ".html", ".hxx",
-        ".ini", ".java", ".js", ".json", ".jsx", ".kt", ".kts", ".less", ".manifest", ".md", ".nsh", ".nsi", ".php", ".properties", ".ps1", ".pubxml", ".py", ".rb", ".rc", ".rs", ".sh", ".sln",
-        ".src", ".svg", ".swift", ".toml", ".ts", ".tsx", ".txt", ".vcxproj", ".xaml", ".xml"
-    }.ToFrozenSet();
+    private static readonly ISet<string> TEXT_FILE_EXTENSIONS = (FrozenSet<string>) [
+        ".ahk", ".am", ".bash", ".bat", ".c", ".cc", ".cmd", ".config", ".cpp", ".cs", ".csproj", ".css", ".csx", ".cxx", ".dtd", ".editorconfig", ".erl", ".fs", ".fsi", ".fsscript", ".fsx",
+        ".gitattributes", ".gitignore", ".gitmodules", ".groovy", ".gsh", ".gvy", ".gy", ".gyp", ".h", ".h++", ".hh", ".hm", ".hpp", ".htm", ".html", ".hxx", ".ini", ".java", ".js", ".json", ".jsx",
+        ".kt", ".kts", ".less", ".manifest", ".md", ".nsh", ".nsi", ".php", ".properties", ".props", ".ps1", ".pubxml", ".py", ".rb", ".rc", ".reg", ".resx", ".rs", ".runsettings", ".sh", ".sln",
+        ".src", ".svg", ".swift", ".targets", ".toml", ".ts", ".tsx", ".txt", ".vcxproj", ".xaml", ".xml", ".xsd", ".xsl", ".xslt", ".yaml", ".yml"
+    ];
 
-    public async Task<PrecommitHook.HookResult> run(IEnumerable<string> stagedFiles) {
+    public async Task<PreCommitHook.HookResult> run(IEnumerable<string> stagedFiles) {
         CancellationTokenSource cts = new();
         IEnumerable<string> stagedTextFiles = stagedFiles
             .Where(filename => TEXT_FILE_EXTENSIONS.Contains(Path.GetExtension(filename).ToLowerInvariant()));
 
         FilePosition? firstProblem = await Task2.firstOrDefault(stagedTextFiles.Select(async Task<FilePosition?> (filename) => {
             if (new FileInfo(filename).Length <= MAX_FILE_SIZE) {
-                string fileContents = await File.ReadAllTextAsync(filename, Encoding.UTF8, cts.Token);
+                string fileContents = await Git.readStagedFile(filename);
                 Match  match        = disallowedTokenPattern().Match(fileContents);
                 if (match.Success) {
                     return stringOffsetToLine(filename, fileContents, match.Index);
@@ -45,9 +43,9 @@ public partial class FixMeBlocker: PrecommitHook {
                  {problem.filename}:{problem.lineNumber:N0}:{problem.columnNumber:N0} {problem.line.Trim()}
                  """);
             await cts.CancelAsync();
-            return PrecommitHook.HookResult.ABORT_COMMIT;
+            return PreCommitHook.HookResult.ABORT_COMMIT;
         } else {
-            return PrecommitHook.HookResult.PROCEED_WITH_COMMIT;
+            return PreCommitHook.HookResult.PROCEED_WITH_COMMIT;
         }
     }
 

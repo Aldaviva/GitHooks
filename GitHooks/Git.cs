@@ -1,21 +1,30 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Text;
 
 namespace GitHooks;
 
 public static class Git {
 
-    public static async Task<Commitish> getHeadCommitHash() => (await executeGit("rev-parse", "--verify", "HEAD"))?.exitCode is null or 0 ? "HEAD" : "4b825dc642cb6eb9a060e54bf8d69288fbee4904";
+    private record ExecutionResult(int exitCode, string standardOutput, string standardError, string cmdline);
+
+    public static async Task<Commitish> getHeadCommitHash() =>
+        (await executeGit("rev-parse", "--verify", WellKnownCommit.HEAD.ToString()))?.exitCode is null or 0 ? WellKnownCommit.HEAD : "4b825dc642cb6eb9a060e54bf8d69288fbee4904";
 
     public static async Task<string[]> getStagedFiles() {
         Commitish headHash = await getHeadCommitHash();
-        return (await executeGit("diff-index", "--cached", "--name-only", "--diff-filter=ACMRTUXB", headHash.ToString()!))?
+        return (await executeGit("diff-index", "--cached", "--name-only", "--diff-filter=ACMRTUXB", headHash.ToString()))?
             .standardOutput.Split('\n')!;
     }
 
-    public static async Task stageFile(string filename) {
-        await executeGit("add", filename);
-    }
+    public static async Task stageFile(string filename) => await executeGit("add", filename);
+
+    public static async Task<string> readStagedFile(string filename) => await executeGit("--no-pager", "show", $":{filename}") switch {
+        { exitCode: 0, standardOutput: var stagedContents } => stagedContents,
+        { exitCode: 128 } => await File.ReadAllTextAsync(filename, Encoding.UTF8), // file is new and only in the working directory, not staged, and in no previous commits
+        { exitCode: var exitCode, cmdline: var cmdline } => throw new ApplicationException($"{cmdline} exited with code {exitCode}"),
+        null => throw new ApplicationException("git show failed to start")
+    };
 
     private static async Task<ExecutionResult?> executeGit(params string[] arguments) {
         Process? process;
@@ -38,15 +47,11 @@ public static class Git {
             Task<string> stderr = process.StandardError.ReadToEndAsync();
 
             await process.WaitForExitAsync();
-            ExecutionResult result = new(process.ExitCode, (await stdout).Trim(), (await stderr).Trim());
-            // Console.WriteLine($"git {string.Join(' ', arguments)} exited with code {result.exitCode}\n  stdout: {result.standardOutput}\n  stderr: {result.standardError}");
-            return result;
+            return new ExecutionResult(process.ExitCode, (await stdout).Trim(), (await stderr).Trim(), string.Join(' ', arguments.Prepend(process.ProcessName)));
         }
     }
 
-    private record ExecutionResult(int exitCode, string standardOutput, string standardError);
-
-    public enum WellKnownCommits {
+    public enum WellKnownCommit {
 
         HEAD
 

@@ -1,37 +1,63 @@
-﻿using GitHooks.Tasks;
+using GitHooks.Tasks;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 namespace GitHooks.Hooks;
 
-public partial class ILLinkRemover: PrecommitHook {
+/*
+ * Finding XML elements in a project file is faster with regexes than with XML DOM, LINQ, or XPath, either using AOT or JIT:
+ *
+ * BenchmarkDotNet v0.14.0, Windows 10 (10.0.19045.5371/22H2/2022Update)
+ * AMD Ryzen 9 3900X, 1 CPU, 24 logical and 12 physical cores
+ * .NET SDK 9.0.102
+ *   [Host]   : .NET 9.0.1 (9.0.124.61010), X64 RyuJIT AVX2
+ *   ShortRun : .NET 9.0.1 (9.0.124.61010), X64 RyuJIT AVX2
+ *
+ * Job=ShortRun  IterationCount=3  LaunchCount=1
+ * WarmupCount=3
+ *
+ * | Method        | Toolchain | Mean      | Error     | StdDev    |
+ * |-------------- |---------- |----------:|----------:|----------:|
+ * | regexFound    | Default   |  1.404 us | 0.0226 us | 0.0012 us |
+ * | regexNotFound | Default   |  2.064 us | 0.0136 us | 0.0007 us |
+ * | linqFound     | Default   | 12.646 us | 2.5613 us | 0.1404 us |
+ * | linqNotFound  | Default   | 13.131 us | 0.7208 us | 0.0395 us |
+ * | domFound      | Default   | 40.090 us | 9.7396 us | 0.5339 us |
+ * | domNotFound   | Default   | 41.667 us | 4.7237 us | 0.2589 us |
+ * | xpathFound    | Default   | 15.645 us | 1.7563 us | 0.0963 us |
+ * | xpathNotFound | Default   | 15.932 us | 0.5158 us | 0.0283 us |
+ * | regexFound    | AOT       |  1.558 us | 0.0313 us | 0.0017 us |
+ * | regexNotFound | AOT       |  2.382 us | 0.2314 us | 0.0127 us |
+ * | linqFound     | AOT       | 16.725 us | 1.1036 us | 0.0605 us |
+ * | linqNotFound  | AOT       | 16.980 us | 1.5630 us | 0.0857 us |
+ * | domFound      | AOT       | 51.134 us | 1.7935 us | 0.0983 us |
+ * | domNotFound   | AOT       | 52.419 us | 1.6967 us | 0.0930 us |
+ * | xpathFound    | AOT       | 22.981 us | 0.7466 us | 0.0409 us |
+ * | xpathNotFound | AOT       | 23.103 us | 0.9354 us | 0.0513 us |
+ */
+public partial class ILLinkRemover: PreCommitHook {
 
-    private const string NEEDLE        = "Microsoft.NET.ILLink.Tasks";
     private const string LOCK_FILENAME = "packages.lock.json";
 
     private static readonly Encoding UTF8 = new UTF8Encoding(false, true);
 
-    [GeneratedRegex(@"""Microsoft\.NET\.ILLink\.Tasks""\s*:\s*{.*?},?\s*", RegexOptions.Singleline)]
+    [GeneratedRegex(@"""Microsoft\.NET\.ILLink\.Tasks""\s*:\s*{.*?},?\s*", RegexOptions.Singleline | RegexOptions.IgnoreCase)]
     private static partial Regex ilLinkPattern();
 
-    [GeneratedRegex(@"<\s*PublishAot\s*>\s*true\s*</\s*PublishAot\s*>", RegexOptions.IgnoreCase)]
+    /*[GeneratedRegex(@"<\s*PublishAot\s*>\s*true\s*</\s*PublishAot\s*>", RegexOptions.IgnoreCase)]
     private static partial Regex publishAotPattern();
 
     [GeneratedRegex(@"<\s*PublishSingleFile\s*>\s*true\s*</\s*PublishSingleFile\s*>", RegexOptions.IgnoreCase)]
-    private static partial Regex publishSingleFilePattern();
+    private static partial Regex publishSingleFilePattern();*/
 
-    public async Task<PrecommitHook.HookResult> run(IEnumerable<string> stagedFiles) {
-        IEnumerable<string> stagedPackageLockFiles = stagedFiles.Where(filename => Path.GetFileName(filename).Equals(LOCK_FILENAME, StringComparison.InvariantCultureIgnoreCase));
+    private static readonly string[] SINGLE_FILE_ELEMENT_NAMES = ["PublishSingleFile", "PublishAOT"];
+
+    public async Task<PreCommitHook.HookResult> run(IEnumerable<string> stagedFiles) {
+        IEnumerable<string> stagedPackageLockFiles = stagedFiles.Where(filename => Path.GetFileName(filename).Equals(LOCK_FILENAME, StringComparison.OrdinalIgnoreCase));
 
         await Task.WhenAll(stagedPackageLockFiles.Select(async packageLockFilename => {
-            /*
-             * For some reason, using a FileStream while AOT compiling this program usually throws
-             * "System.IO.IOException: The process cannot access the file 'C:\Users\Ben\Documents\Projects\MailSender.cs\MailSender-NetCore\packages.lock.json' because it is being used by another process."
-             * in the FileStream constructor, even if no other process has a handle on that file.
-             *
-             * Workaround: replaced single FileStream instance with separate calls to File.ReadAllTextAsync and File.WriteAllTextAsync
-             */
-            Task<string> originalFileContentsTask = File.ReadAllTextAsync(packageLockFilename, UTF8);
+            Task<string> originalFileContentsTask = Git.readStagedFile(packageLockFilename);
 
             CancellationTokenSource projectReadCts = new();
 
@@ -39,7 +65,7 @@ public partial class ILLinkRemover: PrecommitHook {
                     .EnumerateFiles(Path.GetDirectoryName(packageLockFilename)!, "*.csproj", SearchOption.TopDirectoryOnly)
                     .Select(async projectFilename =>
                         (filename: projectFilename, contents: await File.ReadAllTextAsync(projectFilename, UTF8, projectReadCts.Token))),
-                task => publishAotPattern().IsMatch(task.Result.contents) || publishSingleFilePattern().IsMatch(task.Result.contents), projectReadCts);
+                task => linqHasElementWithText(task.Result.contents, SINGLE_FILE_ELEMENT_NAMES, "true"), projectReadCts);
 
             if (singleFileProject == default) {
                 bool   fileModified         = false;
@@ -52,12 +78,17 @@ public partial class ILLinkRemover: PrecommitHook {
                 if (fileModified) {
                     await File.WriteAllTextAsync(packageLockFilename, modifiedFileContents, UTF8, CancellationToken.None);
                     await Git.stageFile(packageLockFilename);
-                    Console.WriteLine($"Removed {NEEDLE} from {packageLockFilename}");
+                    Console.WriteLine($"Removed \"Microsoft.NET.ILLink.Tasks\" from {packageLockFilename}");
                 }
             }
         }));
 
-        return PrecommitHook.HookResult.PROCEED_WITH_COMMIT;
+        return PreCommitHook.HookResult.PROCEED_WITH_COMMIT;
     }
+
+    private static bool linqHasElementWithText(string xmlDoc, IEnumerable<string> elementNames, string elementText) => XDocument.Parse(xmlDoc)
+        .Elements()
+        .IntersectBy(elementNames, element => element.Name.LocalName, StringComparer.OrdinalIgnoreCase)
+        .Any(element => element.FirstNode is XText text && elementText.Equals(text.Value, StringComparison.OrdinalIgnoreCase));
 
 }

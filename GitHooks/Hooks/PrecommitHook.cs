@@ -1,6 +1,6 @@
-﻿namespace GitHooks.Hooks;
+namespace GitHooks.Hooks;
 
-public interface PrecommitHook {
+public interface PreCommitHook {
 
     /// <summary>
     /// Run a hook before getting a commit message from the user and creating a new commit.

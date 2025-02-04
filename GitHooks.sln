@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GitHooks", "GitHooks\GitHoo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{DC454206-02E7-4900-B5DD-1EDEFF903780}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmarks", "Benchmarks\Benchmarks.csproj", "{5755B9DB-9C43-4A46-8276-CF57EF93A712}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{DC454206-02E7-4900-B5DD-1EDEFF903780}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DC454206-02E7-4900-B5DD-1EDEFF903780}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DC454206-02E7-4900-B5DD-1EDEFF903780}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5755B9DB-9C43-4A46-8276-CF57EF93A712}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5755B9DB-9C43-4A46-8276-CF57EF93A712}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5755B9DB-9C43-4A46-8276-CF57EF93A712}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5755B9DB-9C43-4A46-8276-CF57EF93A712}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
