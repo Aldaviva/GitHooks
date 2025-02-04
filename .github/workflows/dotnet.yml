@@ -9,26 +9,39 @@ jobs:
   build:
     env:
       ProjectName: GitHooks
-      TargetPlatform: win-x64
 
     runs-on: windows-latest
 
     steps:
     - name: Clone
       uses: actions/checkout@v4
-        
-    - name: Restore
-      run: dotnet restore ${{ env.ProjectName }} --locked-mode --runtime ${{ env.TargetPlatform }} --verbosity normal
 
-    - name: Build
-      run: dotnet build ${{ env.ProjectName }} --no-restore --runtime ${{ env.TargetPlatform }} --configuration Release --verbosity normal
+    - name: Restore
+      run: dotnet restore ${{ env.ProjectName }} --locked-mode --verbosity normal
 
     - name: Publish
-      run: dotnet publish ${{ env.ProjectName }} --no-build --configuration Release --runtime ${{ env.TargetPlatform }} --verbosity normal
+      run: |
+        dotnet publish ${{ env.ProjectName }} --runtime win-x64 --no-restore --configuration Release
+        dotnet publish ${{ env.ProjectName }} --runtime win-arm64 --no-restore --configuration Release
+        dotnet publish ${{ env.ProjectName }} --runtime linux-x64 --no-restore --configuration Release
+        dotnet publish ${{ env.ProjectName }} --runtime linux-arm64 --no-restore --configuration Release
+        dotnet publish ${{ env.ProjectName }} --runtime linux-arm --no-restore --configuration Release
+
+        New-Item -Name upload\win-x64 -Type Directory -Force
+        New-Item -Name upload\win-arm64 -Type Directory -Force
+        New-Item -Name upload\linux-x64 -Type Directory -Force
+        New-Item -Name upload\linux-arm64 -Type Directory -Force
+        New-Item -Name upload\linux-arm -Type Directory -Force
+
+        Copy-Item -Path ${{ env.ProjectName }}\bin\Release\net9.0\win-x64\publish\pre-commit.exe -Destination upload\win-x64
+        Copy-Item -Path ${{ env.ProjectName }}\bin\Release\net9.0\win-arm64\publish\pre-commit.exe -Destination upload\win-arm64
+        Copy-Item -Path ${{ env.ProjectName }}\bin\Release\net9.0\linux-x64\publish\pre-commit -Destination upload\linux-x64
+        Copy-Item -Path ${{ env.ProjectName }}\bin\Release\net9.0\linux-arm64\publish\pre-commit -Destination upload\linux-arm64
+        Copy-Item -Path ${{ env.ProjectName }}\bin\Release\net9.0\linux-arm\publish\pre-commit -Destination upload\linux-arm
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ env.ProjectName }}.exe
-        path: ${{ env.ProjectName }}/bin/Release/net9.0-windows/${{ env.TargetPlatform }}/publish/*.exe
+        name: ${{ env.ProjectName }}
+        path: upload
         if-no-files-found: error

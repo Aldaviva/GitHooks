@@ -1,7 +1,7 @@
 {
   "version": 1,
   "dependencies": {
-    "net9.0-windows7.0": {
+    "net9.0": {
       "Microsoft.NET.ILLink.Tasks": {
         "type": "Direct",
         "requested": "[9.0.1, )",
@@ -21,6 +21,10 @@
         "contentHash": "9OEQYxKvKfGAKKRZ6BtuOPE5cD/QKHXmmUY+jyk/i3mUbGpLOW6HBkKLa1tS+Ut3hc3QYzchAlSNWVmGYni+wg=="
       }
     },
-    "net9.0-windows7.0/win-x64": {}
+    "net9.0/linux-arm": {},
+    "net9.0/linux-arm64": {},
+    "net9.0/linux-x64": {},
+    "net9.0/win-arm64": {},
+    "net9.0/win-x64": {}
   }
 }
