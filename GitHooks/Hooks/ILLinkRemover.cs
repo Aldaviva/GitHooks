@@ -1,5 +1,6 @@
 using GitHooks.Tasks;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Xml.Linq;
@@ -42,9 +43,9 @@ public class ILLinkRemover: PreCommitHook {
     private const string LOCK_FILENAME     = "packages.lock.json";
     private const string PACKAGE_TO_REMOVE = "Microsoft.NET.ILLink.Tasks";
 
-    private static readonly Encoding              UTF8                      = new UTF8Encoding(false, true);
+    private static readonly Encoding              UTF8 = new UTF8Encoding(false, true);
     private static readonly string[]              SINGLE_FILE_ELEMENT_NAMES = ["PublishSingleFile", "PublishAOT"];
-    private static readonly JsonSerializerOptions JSON_OPTIONS              = new(JsonSerializerDefaults.General) { WriteIndented = true, IndentSize = 2 };
+    private static readonly JsonSerializerOptions JSON_OPTIONS = new(JsonSerializerDefaults.General) { WriteIndented = true, IndentSize = 2, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
 
     public async Task<PreCommitHook.HookResult> run(IEnumerable<string> stagedFiles) {
         IEnumerable<string> stagedPackageLockFiles = stagedFiles.Where(filename => Path.GetFileName(filename).Equals(LOCK_FILENAME, StringComparison.OrdinalIgnoreCase));
@@ -83,7 +84,7 @@ public class ILLinkRemover: PreCommitHook {
 
     private static bool linqHasElementWithText(string xmlDoc, IEnumerable<string> elementNames, string elementText) =>
         XDocument.Parse(xmlDoc)
-            .Elements()
+            .Descendants()
             .IntersectBy(elementNames, element => element.Name.LocalName, StringComparer.OrdinalIgnoreCase)
             .Any(element => element.FirstNode is XText text && elementText.Equals(text.Value, StringComparison.OrdinalIgnoreCase));
 

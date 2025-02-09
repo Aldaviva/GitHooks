@@ -1,11 +1,6 @@
 using GitHooks;
 using GitHooks.Hooks;
 
-/*Console.WriteLine($"cmd: {string.Join(' ', Environment.GetCommandLineArgs())}");
-Console.WriteLine($"cwd: {Environment.CurrentDirectory}");
-Console.WriteLine(
-    $"env: {string.Join("\n     ", Environment.GetEnvironmentVariables().Cast<DictionaryEntry>().OrderBy(entry => entry.Key.ToString(), StringComparer.OrdinalIgnoreCase).Select(pair => $"{pair.Key}={pair.Value}"))}");*/
-
 ICollection<PreCommitHook> precommitHooks = [
     new FixMeBlocker(),
     new ILLinkRemover()

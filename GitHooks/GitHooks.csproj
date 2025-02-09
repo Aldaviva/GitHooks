@@ -17,7 +17,7 @@
         <PublishSingleFile>true</PublishSingleFile>
         <SelfContained>false</SelfContained>
 
-        <Version>0.2.0</Version>
+        <Version>0.2.1</Version>
         <AssemblyName>pre-commit</AssemblyName> <!-- filename -->
         <AssemblyTitle>Ben's Git Hooks</AssemblyTitle> <!-- file description -->
         <Product>$(AssemblyTitle)</Product> <!-- product name -->
