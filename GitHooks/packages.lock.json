@@ -4,15 +4,15 @@
     "net9.0": {
       "Microsoft.NET.ILLink.Tasks": {
         "type": "Direct",
-        "requested": "[9.0.2, )",
-        "resolved": "9.0.2",
-        "contentHash": "+KFnCLVPicEq99ko0tq+ycTvNLXHw0tImmTZjPloB/DOFLPT56KLfk5aS7wbgXRPzYhXTTBYLGaABea5mke77w=="
+        "requested": "[9.0.0, )",
+        "resolved": "9.0.0",
+        "contentHash": "zAwp213evC3UkimtVXRb+Dlgc/40QG145nmZDtp2LO9zJJMfrp+i/87BnXN7tRXEA4liyzdFkjqG1HE8/RPb4A=="
       },
       "Unfucked": {
         "type": "Direct",
-        "requested": "[0.0.0-beta7, )",
-        "resolved": "0.0.0-beta7",
-        "contentHash": "TmVNNsO2ZKlE/0u8ZwKAWIddD7o3/mI/JT++wZsiSV2AA16F7UgK92iI/rQ7zKqaHj+8AkawIFLqkicGg8Nv0A=="
+        "requested": "[0.0.0-beta8, )",
+        "resolved": "0.0.0-beta8",
+        "contentHash": "QOf9t3vStYNKmOVXa51SYyOwoYPHk89Q/RMDVxpyDPlu9TAcnYlabHjbMbqifLqhoVzisKyUMrFQumJbGBQ1hQ=="
       },
       "UnionTypes": {
         "type": "Direct",
