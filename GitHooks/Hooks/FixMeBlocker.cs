@@ -13,10 +13,10 @@ public partial class FixMeBlocker: PreCommitHook {
     private static partial Regex disallowedTokenPattern();
 
     private static readonly FrozenSet<string> TEXT_FILE_EXTENSIONS = [
-        ".ahk", ".am", ".appxmanifest", ".bash", ".bat", ".c", ".cc", ".cmd", ".config", ".cpp", ".cs", ".csproj", ".css", ".csx", ".cxx", ".dtd", ".editorconfig", ".erl", ".fs", ".fsi", ".fsscript",
-        ".fsx", ".gitattributes", ".gitignore", ".gitmodules", ".groovy", ".gsh", ".gvy", ".gy", ".gyp", ".h", ".h++", ".hh", ".hm", ".hpp", ".htm", ".html", ".hxx", ".ini", ".java", ".js", ".json",
-        ".jsp", ".jsx", ".kt", ".kts", ".less", ".manifest", ".md", ".nsh", ".nsi", ".php", ".properties", ".props", ".ps1", ".pubxml", ".py", ".rb", ".rc", ".reg", ".resx", ".rs", ".runsettings",
-        ".sh", ".sln", ".src", ".svg", ".swift", ".targets", ".toml", ".ts", ".tsx", ".txt", ".vcproj", ".vcxproj", ".xaml", ".xml", ".xsd", ".xsl", ".xslt", ".yaml", ".yml"
+        ".ahk", ".am", ".appxmanifest", ".bash", ".bat", ".c", ".cc", ".cmd", ".config", ".cpp", ".cs", ".csproj", ".css", ".csx", ".cxx", ".dtd", ".editorconfig", ".erl", ".fs", ".fsi", ".fsproj",
+        ".fsscript", ".fsx", ".gitattributes", ".gitignore", ".gitmodules", ".groovy", ".gsh", ".gvy", ".gy", ".gyp", ".h", ".h++", ".hh", ".hm", ".hpp", ".htm", ".html", ".hxx", ".ini", ".java",
+        ".js", ".json", ".jsp", ".jsx", ".kt", ".kts", ".less", ".manifest", ".md", ".nsh", ".nsi", ".php", ".properties", ".props", ".ps1", ".pubxml", ".py", ".rb", ".rc", ".reg", ".resx", ".rs",
+        ".runsettings", ".sh", ".sln", ".src", ".svg", ".swift", ".targets", ".toml", ".ts", ".tsx", ".txt", ".vcproj", ".vcxproj", ".xaml", ".xml", ".xsd", ".xsl", ".xslt", ".yaml", ".yml"
     ];
 
     public async Task<PreCommitHook.HookResult> run(IEnumerable<string> stagedFiles) {
@@ -36,7 +36,7 @@ public partial class FixMeBlocker: PreCommitHook {
 
         if (problems.Length != 0) {
             Console.WriteLine(
-                $"Found {problems.Length:N0} FIXME{(problems.Length >= 2 ? "s" : "")}. To continue committing, get rid of the following temporary hacks, then run `git add <file>…; git commit`.");
+                $"Found {problems.Length:N0} FIXME{(problems.Length >= 2 ? "s" : "")}. To continue committing, get rid of the following temporary hacks, then run `git add <file>â€¦; git commit`.");
             foreach (FilePosition problem in problems.OrderBy(p => p.filename, StringComparer.CurrentCultureIgnoreCase).ThenBy(p => p.lineNumber).ThenBy(p => p.columnNumber)) {
                 Console.WriteLine($"{problem.filename}:{problem.lineNumber:D}:{problem.columnNumber:D} {problem.line.Trim()}");
             }

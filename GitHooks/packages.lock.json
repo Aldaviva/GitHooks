@@ -1,18 +1,12 @@
-{
+﻿{
   "version": 1,
   "dependencies": {
     "net9.0": {
-      "Microsoft.NET.ILLink.Tasks": {
-        "type": "Direct",
-        "requested": "[9.0.8, )",
-        "resolved": "9.0.8",
-        "contentHash": "rd1CbIsMtVPtZNTIVD6Xydue//klYOOQIDpRgu3BHtv17AlpRs74/6QFbcYgMm/jL+naVU2T3OFLxVSLV5lQLQ=="
-      },
       "Unfucked": {
         "type": "Direct",
-        "requested": "[0.0.0-beta8, )",
-        "resolved": "0.0.0-beta8",
-        "contentHash": "QOf9t3vStYNKmOVXa51SYyOwoYPHk89Q/RMDVxpyDPlu9TAcnYlabHjbMbqifLqhoVzisKyUMrFQumJbGBQ1hQ=="
+        "requested": "[0.0.1-beta.8, )",
+        "resolved": "0.0.1-beta.8",
+        "contentHash": "4azFOKMrXiFymzDcAuVy0AzllvSxoG13BTbkccKbzTCJenL9q4AdYHYhHvxbMBQGA1uwfB4I+aGHLuh21Vv1bw=="
       },
       "UnionTypes": {
         "type": "Direct",
