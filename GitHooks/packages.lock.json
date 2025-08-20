@@ -1,12 +1,12 @@
-﻿{
+{
   "version": 1,
   "dependencies": {
     "net9.0": {
       "Unfucked": {
         "type": "Direct",
-        "requested": "[0.0.1-beta.8, )",
-        "resolved": "0.0.1-beta.8",
-        "contentHash": "4azFOKMrXiFymzDcAuVy0AzllvSxoG13BTbkccKbzTCJenL9q4AdYHYhHvxbMBQGA1uwfB4I+aGHLuh21Vv1bw=="
+        "requested": "[0.0.1-beta.12, )",
+        "resolved": "0.0.1-beta.12",
+        "contentHash": "GGsKbVyyvpixQqeGeJTduu9fNvHo0S4FyXR+yEdzZVJ6JzMFWjlbY8ApAKrzZGJZhfiCZnNuIkw0PSc9JPuxxw=="
       },
       "UnionTypes": {
         "type": "Direct",

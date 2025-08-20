@@ -1,4 +1,4 @@
-using FluentAssertions;
+/*using FluentAssertions;
 using GitHooks.Tasks;
 
 namespace Tests;
@@ -65,4 +65,5 @@ public class Task2Tests {
         actual.Should().Be(default);
     }
 
-}
+}*/
+

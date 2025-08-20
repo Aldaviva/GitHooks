@@ -1,9 +1,9 @@
-using GitHooks.Tasks;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Xml.Linq;
+using Unfucked;
 
 namespace GitHooks.Hooks;
 
@@ -55,11 +55,11 @@ public class ILLinkRemover: PreCommitHook {
 
             CancellationTokenSource projectReadCts = new();
 
-            (string filename, string contents) singleFileProject = await Task2.firstOrDefault(Directory
+            (string filename, string contents)? singleFileProject = await Tasks.FirstOrDefaultStruct(Directory
                     .EnumerateFiles(Path.GetDirectoryName(packageLockFilename)!, "*.csproj", SearchOption.TopDirectoryOnly)
                     .Select(async projectFilename =>
                         (filename: projectFilename, contents: await File.ReadAllTextAsync(projectFilename, UTF8, projectReadCts.Token))),
-                task => linqHasElementWithText(task.Result.contents, SINGLE_FILE_ELEMENT_NAMES, "true"), projectReadCts);
+                result => linqHasElementWithText(result.contents, SINGLE_FILE_ELEMENT_NAMES, "true"), projectReadCts.Token);
 
             if (singleFileProject == default) {
                 bool fileModified = false;
