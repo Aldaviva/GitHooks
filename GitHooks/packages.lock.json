@@ -4,9 +4,9 @@
     "net9.0": {
       "Unfucked": {
         "type": "Direct",
-        "requested": "[0.0.1-beta.19, )",
-        "resolved": "0.0.1-beta.19",
-        "contentHash": "N6bKcXSOZFEn4YtmjqeJycRJidHDkS0KvWtU00HCboyEjlFRopc2f7W4BmhqkmwkEB6UlHyAsRepp4RuonQ1lA=="
+        "requested": "[0.0.1-beta.24, )",
+        "resolved": "0.0.1-beta.24",
+        "contentHash": "shmZSSVrtJykX52q84advz9dQnhn+E7ZSwL02ducQ0zRmnY4hymCxHkMzbOv9GsR8TisjLIBpMdqHyu8Ns3CGA=="
       },
       "UnionTypes": {
         "type": "Direct",
