@@ -33,11 +33,11 @@ jobs:
         New-Item -Name upload\linux-arm64 -Type Directory -Force
         New-Item -Name upload\linux-arm -Type Directory -Force
 
-        Copy-Item -Path ${{ env.ProjectName }}\bin\Release\net9.0\win-x64\publish\pre-commit.exe -Destination upload\win-x64
-        Copy-Item -Path ${{ env.ProjectName }}\bin\Release\net9.0\win-arm64\publish\pre-commit.exe -Destination upload\win-arm64
-        Copy-Item -Path ${{ env.ProjectName }}\bin\Release\net9.0\linux-x64\publish\pre-commit -Destination upload\linux-x64
-        Copy-Item -Path ${{ env.ProjectName }}\bin\Release\net9.0\linux-arm64\publish\pre-commit -Destination upload\linux-arm64
-        Copy-Item -Path ${{ env.ProjectName }}\bin\Release\net9.0\linux-arm\publish\pre-commit -Destination upload\linux-arm
+        Copy-Item -Path ${{ env.ProjectName }}\bin\Release\net10.0\win-x64\publish\pre-commit.exe -Destination upload\win-x64
+        Copy-Item -Path ${{ env.ProjectName }}\bin\Release\net10.0\win-arm64\publish\pre-commit.exe -Destination upload\win-arm64
+        Copy-Item -Path ${{ env.ProjectName }}\bin\Release\net10.0\linux-x64\publish\pre-commit -Destination upload\linux-x64
+        Copy-Item -Path ${{ env.ProjectName }}\bin\Release\net10.0\linux-arm64\publish\pre-commit -Destination upload\linux-arm64
+        Copy-Item -Path ${{ env.ProjectName }}\bin\Release\net10.0\linux-arm\publish\pre-commit -Destination upload\linux-arm
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4

@@ -1,6 +1,5 @@
 using System.Collections.Frozen;
 using System.Text.RegularExpressions;
-using Unfucked;
 
 namespace GitHooks.Hooks;
 
@@ -16,7 +15,7 @@ public partial class FixMeBlocker: PreCommitHook {
         ".ahk", ".am", ".appxmanifest", ".bash", ".bat", ".c", ".cc", ".cmd", ".config", ".cpp", ".cs", ".csproj", ".css", ".csx", ".cxx", ".dtd", ".editorconfig", ".erl", ".fs", ".fsi", ".fsproj",
         ".fsscript", ".fsx", ".gitattributes", ".gitignore", ".gitmodules", ".groovy", ".gsh", ".gvy", ".gy", ".gyp", ".h", ".h++", ".hh", ".hm", ".hpp", ".htm", ".html", ".hxx", ".ini", ".java",
         ".js", ".json", ".jsp", ".jsx", ".kt", ".kts", ".less", ".manifest", ".md", ".nsh", ".nsi", ".php", ".properties", ".props", ".ps1", ".pubxml", ".py", ".rb", ".rc", ".reg", ".resx", ".rs",
-        ".runsettings", ".sh", ".sln", ".src", ".svg", ".swift", ".targets", ".toml", ".ts", ".tsx", ".txt", ".vcproj", ".vcxproj", ".xaml", ".xml", ".xsd", ".xsl", ".xslt", ".yaml", ".yml"
+        ".runsettings", ".sh", ".sln", ".slnx", ".src", ".svg", ".swift", ".targets", ".toml", ".ts", ".tsx", ".txt", ".vcproj", ".vcxproj", ".xaml", ".xml", ".xsd", ".xsl", ".xslt", ".yaml", ".yml"
     ];
 
     public async Task<PreCommitHook.HookResult> run(IEnumerable<string> stagedFiles) {

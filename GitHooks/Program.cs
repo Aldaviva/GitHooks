@@ -1,9 +1,12 @@
 using GitHooks;
 using GitHooks.Hooks;
 
+PackageLockService packageLockService = new();
+
 ICollection<PreCommitHook> precommitHooks = [
     new FixMeBlocker(),
-    new ILLinkRemover()
+    new ILLinkRemover(packageLockService),
+    new PackageLockDevDependencyBlocker(packageLockService)
 ];
 
 string[] stagedFiles = await Git.getStagedFiles();

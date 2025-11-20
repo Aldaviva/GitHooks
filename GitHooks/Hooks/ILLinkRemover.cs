@@ -1,9 +1,7 @@
 using System.Text;
-using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Xml.Linq;
-using Unfucked;
 
 namespace GitHooks.Hooks;
 
@@ -38,20 +36,18 @@ namespace GitHooks.Hooks;
  * | xpathFound    | AOT       | 22.981 us | 0.7466 us | 0.0409 us |
  * | xpathNotFound | AOT       | 23.103 us | 0.9354 us | 0.0513 us |
  */
-public class ILLinkRemover: PreCommitHook {
+public class ILLinkRemover(PackageLockService packageLockService): PreCommitHook {
 
-    private const string LOCK_FILENAME     = "packages.lock.json";
     private const string PACKAGE_TO_REMOVE = "Microsoft.NET.ILLink.Tasks";
 
-    private static readonly Encoding              UTF8 = new UTF8Encoding(false, true);
-    private static readonly string[]              SINGLE_FILE_ELEMENT_NAMES = ["PublishSingleFile", "PublishAOT"];
-    private static readonly JsonSerializerOptions JSON_OPTIONS = new(JsonSerializerDefaults.General) { WriteIndented = true, IndentSize = 2, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
+    private static readonly Encoding UTF8                      = new UTF8Encoding(false, true);
+    private static readonly string[] SINGLE_FILE_ELEMENT_NAMES = ["PublishSingleFile", "PublishAOT"];
 
     public async Task<PreCommitHook.HookResult> run(IEnumerable<string> stagedFiles) {
-        IEnumerable<string> stagedPackageLockFiles = stagedFiles.Where(filename => Path.GetFileName(filename).Equals(LOCK_FILENAME, StringComparison.OrdinalIgnoreCase));
+        IEnumerable<string> stagedPackageLockFiles = stagedFiles.Where(PackageLockService.isPackageLockFile);
 
         await Task.WhenAll(stagedPackageLockFiles.Select(async packageLockFilename => {
-            Task<string> originalLockFileContentsTask = Git.readStagedFile(packageLockFilename);
+            Task<JsonObject> packageLockObjectTask = packageLockService.getLockFileContents(packageLockFilename);
 
             CancellationTokenSource projectReadCts = new();
 
@@ -59,19 +55,19 @@ public class ILLinkRemover: PreCommitHook {
                     .EnumerateFiles(Path.GetDirectoryName(packageLockFilename)!, "*.csproj", SearchOption.TopDirectoryOnly)
                     .Select(async projectFilename =>
                         (filename: projectFilename, contents: await File.ReadAllTextAsync(projectFilename, UTF8, projectReadCts.Token))),
-                result => linqHasElementWithText(result.contents, SINGLE_FILE_ELEMENT_NAMES, "true"), projectReadCts.Token);
+                result => linqHasElementWithText(result.contents, SINGLE_FILE_ELEMENT_NAMES, "true", false), projectReadCts.Token);
 
             if (singleFileProject == default) {
                 bool fileModified = false;
 
-                JsonObject? packageLockObject = JsonSerializer.Deserialize<JsonObject>(await originalLockFileContentsTask, JSON_OPTIONS);
-                foreach (KeyValuePair<string, JsonNode?> runtimeDependencies in packageLockObject?["dependencies"] as JsonObject ?? []) {
+                JsonObject packageLockObject = await packageLockObjectTask;
+                foreach (KeyValuePair<string, JsonNode?> runtimeDependencies in packageLockObject["dependencies"] as JsonObject ?? []) {
                     fileModified |= (runtimeDependencies.Value as JsonObject)?.Remove(PACKAGE_TO_REMOVE) ?? false;
                 }
 
                 if (fileModified) {
                     await using (FileStream lockFileWriteStream = File.Open(packageLockFilename, FileMode.Truncate, FileAccess.Write)) {
-                        await JsonSerializer.SerializeAsync(lockFileWriteStream, packageLockObject, JSON_OPTIONS, CancellationToken.None);
+                        await JsonSerializer.SerializeAsync(lockFileWriteStream, packageLockObject, PackageLockService.JSON_OPTIONS, CancellationToken.None);
                     }
                     await Git.stageFile(packageLockFilename);
                     Console.WriteLine($"Removed {PACKAGE_TO_REMOVE} from {packageLockFilename}");
@@ -82,10 +78,11 @@ public class ILLinkRemover: PreCommitHook {
         return PreCommitHook.HookResult.PROCEED_WITH_COMMIT;
     }
 
-    private static bool linqHasElementWithText(string xmlDoc, IEnumerable<string> elementNames, string elementText) =>
+    private static bool linqHasElementWithText(string xmlDoc, IEnumerable<string> elementNames, string elementText, bool allowCondition) =>
         XDocument.Parse(xmlDoc)
             .Descendants()
             .IntersectBy(elementNames, element => element.Name.LocalName, StringComparer.OrdinalIgnoreCase)
-            .Any(element => element.FirstNode is XText text && elementText.Equals(text.Value, StringComparison.OrdinalIgnoreCase));
+            .Any(element => element.FirstNode is XText text && elementText.Equals(text.Value, StringComparison.OrdinalIgnoreCase)
+                && (allowCondition || !element.Attributes().Any(attribute => attribute.Name.LocalName.Equals("Condition", StringComparison.OrdinalIgnoreCase))));
 
 }
