@@ -19,8 +19,9 @@ public class PackageLockDevDependencyBlocker(PackageLockService packageLockServi
                 JsonObject lockFileContents = await packageLockService.getLockFileContents(packageLockFilename);
 
                 IEnumerable<(string name, string version)> resolvedDependencies = lockFileContents["dependencies"]?.AsObject().SelectMany(tfm =>
-                    tfm.Value?.AsObject().Select(package =>
-                        (name: package.Key, version: package.Value!["resolved"]!.GetValue<string>())) ?? []) ?? [];
+                    tfm.Value?.AsObject()
+                        .Where(dependency => dependency.Value!["type"]?.GetValue<string>() != "Project")
+                        .Select(package => (name: package.Key, version: package.Value!["resolved"]!.GetValue<string>())) ?? []) ?? [];
 
                 return (await Task.WhenAll(resolvedDependencies.Select(async dependency => {
                     try {
