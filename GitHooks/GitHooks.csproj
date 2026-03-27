@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
@@ -15,14 +15,13 @@
         <OptimizationPreference>speed</OptimizationPreference>
         <InvariantGlobalization>true</InvariantGlobalization>-->
         <SelfContained>false</SelfContained>
-        <!-- <PublishSingleFile Condition="'$(BuildingInsideVisualStudio)' != 'true'">true</PublishSingleFile> -->
 
-        <Version>0.3.0</Version>
+        <Version>0.3.1</Version>
         <AssemblyName>pre-commit</AssemblyName> <!-- filename -->
         <AssemblyTitle>Ben's Git Hooks</AssemblyTitle> <!-- file description -->
         <Product>$(AssemblyTitle)</Product> <!-- product name -->
         <Authors>Ben Hutchison</Authors>
-        <Copyright>© 2025 $(Authors)</Copyright>
+        <Copyright>© 2026 $(Authors)</Copyright>
         <Company>$(Authors)</Company>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <ApplicationIcon>icon.ico</ApplicationIcon>
@@ -34,7 +33,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Unfucked" Version="0.0.1-beta.34" />
+        <PackageReference Include="Unfucked" Version="0.0.1-beta.35" />
         <PackageReference Include="UnionTypes" Version="1.1.0" />
     </ItemGroup>
 

@@ -3,13 +3,13 @@ using System.Text.RegularExpressions;
 
 namespace GitHooks.Hooks;
 
-public partial class FixMeBlocker: PreCommitHook {
+public sealed partial class FixMeBlocker: PreCommitHook {
 
     /// 50 MB
     private const long MAX_FILE_SIZE = 50 * 1024 * 1024;
 
     [GeneratedRegex(@"\bFIXME\b", RegexOptions.IgnoreCase)]
-    private static partial Regex disallowedTokenPattern();
+    private static partial Regex disallowedTokenPattern { get; }
 
     private static readonly FrozenSet<string> TEXT_FILE_EXTENSIONS = [
         ".ahk", ".am", ".appxmanifest", ".bash", ".bat", ".c", ".cc", ".cmd", ".config", ".cpp", ".cs", ".csproj", ".css", ".csx", ".cxx", ".dtd", ".editorconfig", ".erl", ".fs", ".fsi", ".fsproj",
@@ -24,7 +24,7 @@ public partial class FixMeBlocker: PreCommitHook {
         FilePosition[] problems = (await Task.WhenAll(stagedTextFiles.Select(async Task<FilePosition?> (filename) => {
             if (new FileInfo(filename).Length <= MAX_FILE_SIZE) {
                 string fileContents = await Git.readStagedFile(filename);
-                Match  match        = disallowedTokenPattern().Match(fileContents);
+                Match  match        = disallowedTokenPattern.Match(fileContents);
                 if (match.Success) {
                     return stringOffsetToLine(filename, fileContents, match.Index);
                 }

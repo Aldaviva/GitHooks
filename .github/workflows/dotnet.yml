@@ -14,7 +14,7 @@ jobs:
 
     steps:
     - name: Clone
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Restore
       run: dotnet restore ${{ env.ProjectName }} --locked-mode --verbosity normal
@@ -40,7 +40,7 @@ jobs:
         Copy-Item -Path ${{ env.ProjectName }}\bin\Release\net10.0\linux-arm\publish\pre-commit -Destination upload\linux-arm
 
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ env.ProjectName }}
         path: upload

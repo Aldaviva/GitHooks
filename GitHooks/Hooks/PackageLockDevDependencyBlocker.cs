@@ -3,7 +3,7 @@ using System.Text.Json.Nodes;
 
 namespace GitHooks.Hooks;
 
-public class PackageLockDevDependencyBlocker(PackageLockService packageLockService): PreCommitHook {
+public sealed class PackageLockDevDependencyBlocker(PackageLockService packageLockService): PreCommitHook {
 
     private static readonly string PACKAGE_CACHE_DIR = Environment.ExpandEnvironmentVariables(@"%USERPROFILE%\.nuget\packages");
 

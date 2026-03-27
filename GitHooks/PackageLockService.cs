@@ -5,7 +5,7 @@ using System.Text.Json.Nodes;
 
 namespace GitHooks;
 
-public class PackageLockService {
+public sealed class PackageLockService {
 
     private const string LOCK_FILENAME = "packages.lock.json";
 

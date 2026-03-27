@@ -36,7 +36,7 @@ namespace GitHooks.Hooks;
  * | xpathFound    | AOT       | 22.981 us | 0.7466 us | 0.0409 us |
  * | xpathNotFound | AOT       | 23.103 us | 0.9354 us | 0.0513 us |
  */
-public class ILLinkRemover(PackageLockService packageLockService): PreCommitHook {
+public sealed class ILLinkRemover(PackageLockService packageLockService): PreCommitHook {
 
     private const string PACKAGE_TO_REMOVE = "Microsoft.NET.ILLink.Tasks";
 
@@ -49,13 +49,13 @@ public class ILLinkRemover(PackageLockService packageLockService): PreCommitHook
         await Task.WhenAll(stagedPackageLockFiles.Select(async packageLockFilename => {
             Task<JsonObject> packageLockObjectTask = packageLockService.getLockFileContents(packageLockFilename);
 
-            CancellationTokenSource projectReadCts = new();
+            using CancellationTokenSource projectReadCts = new();
 
             (string filename, string contents)? singleFileProject = await Tasks.FirstOrDefaultStruct(Directory
-                    .EnumerateFiles(Path.GetDirectoryName(packageLockFilename)!, "*.csproj", SearchOption.TopDirectoryOnly)
+                    .EnumerateFiles(Path.GetDirectoryName(packageLockFilename).EmptyToNull() ?? ".", "*.csproj", SearchOption.TopDirectoryOnly)
                     .Select(async projectFilename =>
                         (filename: projectFilename, contents: await File.ReadAllTextAsync(projectFilename, UTF8, projectReadCts.Token))),
-                result => linqHasElementWithText(result.contents, SINGLE_FILE_ELEMENT_NAMES, "true", false), projectReadCts.Token);
+                result => linqHasElementWithText(result.contents, SINGLE_FILE_ELEMENT_NAMES, "true", false), projectReadCts);
 
             if (singleFileProject == default) {
                 bool fileModified = false;
