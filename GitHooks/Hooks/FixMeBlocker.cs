@@ -19,9 +19,9 @@ public sealed partial class FixMeBlocker: PreCommitHook {
     ];
 
     public async Task<PreCommitHook.HookResult> run(IEnumerable<string> stagedFiles) {
-        IEnumerable<string> stagedTextFiles = stagedFiles.Where(filename => TEXT_FILE_EXTENSIONS.Contains(Path.GetExtension(filename).ToLowerInvariant()));
+        IEnumerable<string> stagedTextFiles = stagedFiles.Where(static filename => TEXT_FILE_EXTENSIONS.Contains(Path.GetExtension(filename).ToLowerInvariant()));
 
-        FilePosition[] problems = (await Task.WhenAll(stagedTextFiles.Select(async Task<FilePosition?> (filename) => {
+        FilePosition[] problems = (await Task.WhenAll(stagedTextFiles.Select(static async Task<FilePosition?> (filename) => {
             if (new FileInfo(filename).Length <= MAX_FILE_SIZE) {
                 string fileContents = await Git.readStagedFile(filename);
                 Match  match        = disallowedTokenPattern.Match(fileContents);
@@ -36,7 +36,7 @@ public sealed partial class FixMeBlocker: PreCommitHook {
         if (problems.Length != 0) {
             Console.WriteLine(
                 $"Found {problems.Length:N0} FIXME{(problems.Length >= 2 ? "s" : "")}. To continue committing, get rid of the following temporary hacks, then run `git add <file>…; git commit`.");
-            foreach (FilePosition problem in problems.OrderBy(p => p.filename, StringComparer.CurrentCultureIgnoreCase).ThenBy(p => p.lineNumber).ThenBy(p => p.columnNumber)) {
+            foreach (FilePosition problem in problems.OrderBy(static p => p.filename, StringComparer.CurrentCultureIgnoreCase).ThenBy(static p => p.lineNumber).ThenBy(static p => p.columnNumber)) {
                 Console.WriteLine($"{problem.filename}:{problem.lineNumber:D}:{problem.columnNumber:D} {problem.line.Trim()}");
             }
 

@@ -52,10 +52,10 @@ public sealed class ILLinkRemover(PackageLockService packageLockService): PreCom
             using CancellationTokenSource projectReadCts = new();
 
             (string filename, string contents)? singleFileProject = await Tasks.FirstOrDefaultStruct(Directory
-                    .EnumerateFiles(Path.GetDirectoryName(packageLockFilename).EmptyToNull() ?? ".", "*.csproj", SearchOption.TopDirectoryOnly)
+                    .EnumerateFiles(Path.GetDirectoryName(packageLockFilename).EmptyToNull ?? ".", "*.csproj", SearchOption.TopDirectoryOnly)
                     .Select(async projectFilename =>
                         (filename: projectFilename, contents: await File.ReadAllTextAsync(projectFilename, UTF8, projectReadCts.Token))),
-                result => linqHasElementWithText(result.contents, SINGLE_FILE_ELEMENT_NAMES, "true", false), projectReadCts);
+                static result => linqHasElementWithText(result.contents, SINGLE_FILE_ELEMENT_NAMES, "true", false), projectReadCts);
 
             if (singleFileProject == default) {
                 bool fileModified = false;
@@ -81,8 +81,8 @@ public sealed class ILLinkRemover(PackageLockService packageLockService): PreCom
     private static bool linqHasElementWithText(string xmlDoc, IEnumerable<string> elementNames, string elementText, bool allowCondition) =>
         XDocument.Parse(xmlDoc)
             .Descendants()
-            .IntersectBy(elementNames, element => element.Name.LocalName, StringComparer.OrdinalIgnoreCase)
+            .IntersectBy(elementNames, static element => element.Name.LocalName, StringComparer.OrdinalIgnoreCase)
             .Any(element => element.FirstNode is XText text && elementText.Equals(text.Value, StringComparison.OrdinalIgnoreCase)
-                && (allowCondition || !element.Attributes().Any(attribute => attribute.Name.LocalName.Equals("Condition", StringComparison.OrdinalIgnoreCase))));
+                && (allowCondition || !element.Attributes().Any(static attribute => attribute.Name.LocalName.Equals("Condition", StringComparison.OrdinalIgnoreCase))));
 
 }

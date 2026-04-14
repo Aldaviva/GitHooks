@@ -15,6 +15,7 @@
         <OptimizationPreference>speed</OptimizationPreference>
         <InvariantGlobalization>true</InvariantGlobalization>-->
         <SelfContained>false</SelfContained>
+        <WarningsAsErrors>CA1859</WarningsAsErrors>
 
         <Version>0.3.1</Version>
         <AssemblyName>pre-commit</AssemblyName> <!-- filename -->
@@ -33,7 +34,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Unfucked" Version="0.0.1-beta.35" />
+        <PackageReference Include="Unfucked" Version="0.0.1-beta.39" />
         <PackageReference Include="UnionTypes" Version="1.1.0" />
     </ItemGroup>
 

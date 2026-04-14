@@ -18,10 +18,10 @@ public sealed class PackageLockDevDependencyBlocker(PackageLockService packageLo
         (await Task.WhenAll(stagedFiles.Where(PackageLockService.isPackageLockFile).Select(async packageLockFilename => {
                 JsonObject lockFileContents = await packageLockService.getLockFileContents(packageLockFilename);
 
-                IEnumerable<(string name, string version)> resolvedDependencies = lockFileContents["dependencies"]?.AsObject().SelectMany(tfm =>
+                IEnumerable<(string name, string version)> resolvedDependencies = lockFileContents["dependencies"]?.AsObject().SelectMany(static tfm =>
                     tfm.Value?.AsObject()
-                        .Where(dependency => dependency.Value!["type"]?.GetValue<string>() != "Project")
-                        .Select(package => (name: package.Key, version: package.Value!["resolved"]!.GetValue<string>())) ?? []) ?? [];
+                        .Where(static dependency => dependency.Value!["type"]?.GetValue<string>() != "Project")
+                        .Select(static package => (name: package.Key, version: package.Value!["resolved"]!.GetValue<string>())) ?? []) ?? [];
 
                 return (await Task.WhenAll(resolvedDependencies.Select(async dependency => {
                     try {
@@ -42,8 +42,8 @@ public sealed class PackageLockDevDependencyBlocker(PackageLockService packageLo
                     } catch (FileNotFoundException) {
                         return true;
                     }
-                }))).All(isAllowed => isAllowed);
+                }))).All(static isAllowed => isAllowed);
             }))
-        ).All(isAllowed => isAllowed) ? PreCommitHook.HookResult.PROCEED_WITH_COMMIT : PreCommitHook.HookResult.ABORT_COMMIT;
+        ).All(static isAllowed => isAllowed) ? PreCommitHook.HookResult.PROCEED_WITH_COMMIT : PreCommitHook.HookResult.ABORT_COMMIT;
 
 }
