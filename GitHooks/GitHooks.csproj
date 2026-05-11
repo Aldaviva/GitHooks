@@ -34,7 +34,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Unfucked" Version="0.0.1-beta.42" />
+        <PackageReference Include="Unfucked" Version="0.0.1-beta.43" />
         <PackageReference Include="UnionTypes" Version="1.1.0" />
     </ItemGroup>
 
